@@ -63,25 +63,27 @@ struct ContentView: View {
       Text("Ethan's memo")
       
       ZStack {
-      
-      LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
-      
-                        .ignoresSafeArea()
-      
-      TextField("write here", text: self.$text)
-            .font(.system(size: 30))
-            .multilineTextAlignment(.center)
-            .lineLimit(15)
-            .padding(.all)
-      }
+          LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
+          
+                            .ignoresSafeArea()
+              
+          TextEditor(text: self.$text)
+              .frame(minHeight: 100)
+              .font(.system(size: 30))
+              .multilineTextAlignment(.center)
+              .background(Color.clear)
+              .padding(.all)
+        }
       }
       //下のコードを忘れ、1時間スクショがずっと真っ白で死んでた
       .background(RectangleGetter(rect: $rect))
       
     .onAppear(perform: {
-      self.keyboard.addObserver()
+        self.keyboard.addObserver()
+        UITextView.appearance().backgroundColor = .clear
     }).onDisappear(perform: {
-      self.keyboard.removeObserver()
+        self.keyboard.removeObserver()
+        UITextView.appearance().backgroundColor = nil
     }).padding(.bottom,
                self.keyboard.keyboardHeight)
       .animation(.easeOut)
