@@ -73,6 +73,13 @@ struct ContentView: View {
               .multilineTextAlignment(.center)
               .background(Color.clear)
               .padding(.all)
+          
+          
+          if self.text.isEmpty
+          { Text("write here").opacity(0.25)
+              Spacer()
+          }
+
         }
       }
       //下のコードを忘れ、1時間スクショがずっと真っ白で死んでた
@@ -184,6 +191,5 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
 
 
