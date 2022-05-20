@@ -8,7 +8,8 @@
 import SwiftUI
 
 import Combine
-//textfieldに直接入力できるようにするためのclass設定か
+//textfieldに直接入力できるようにするためのclass設定か、もしくはキーボードの動的高さ設定
+//いずれ必要になりそうだから残しておこう
 class KeyboardObserver: ObservableObject {
 
   @Published var keyboardHeight: CGFloat = 0.0
@@ -46,6 +47,14 @@ class KeyboardObserver: ObservableObject {
       }
 
     }
+
+//乱数生成できたが、アプリ起動直後しか適用されない⇨できた！！！！
+//let randomInt = Int.random(in: 1..<4)
+
+
+
+
+
 //見た目を作る
 struct ContentView: View {
 
@@ -63,9 +72,16 @@ struct ContentView: View {
       Text("Ethan's memo")
       
       ZStack {
-          LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
+          /*LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
           
-                            .ignoresSafeArea()
+                            .ignoresSafeArea()*/
+          
+          Image("wavess")
+              .resizable()
+              //.aspectRatio(contentMode: .fit)
+              .offset(x: 0, y: 0)
+
+              
               
           TextEditor(text: self.$text)
               .frame(minHeight: 100)
@@ -73,13 +89,37 @@ struct ContentView: View {
               .multilineTextAlignment(.center)
               .background(Color.clear)
               .padding(.all)
+              .offset(x: 0, y: 300)
           
           
-          if self.text.isEmpty
+          /*if self.text.isEmpty
           { Text("write here").opacity(0.25)
-              Spacer()
-          }
-
+              .offset(x: 0, y: -20)
+              .font(.system(size: 30))
+          }*/
+//Button(action以下をランダムのタイミングで実行してくれるシステム作る 装飾は除く
+          Button(action: {
+                         //ボタンを押したら乱数生成⇨変数に代入
+                         //乱数を代入できた
+              let randomInt = Int.random(in: 1..<4)
+              self.text = String(text.dropLast(randomInt))
+              
+              // droplastをline数に変換できないかな
+              
+                      }){
+                          Image(systemName: "clear")
+                          Text("Delete (random number) letters")
+                                  .frame(width: 300, height: 60)
+                                  .foregroundColor(Color.black)
+                      }
+                      .background(Color.white)
+                      .offset(x: 0, y: 300)
+                      .foregroundColor(Color.black)
+          
+                      
+          
+          
+          
         }
       }
       //下のコードを忘れ、1時間スクショがずっと真っ白で死んでた
