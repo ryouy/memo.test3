@@ -63,10 +63,12 @@ struct ContentView: View {
   @State private var rect: CGRect = .zero
   @State var uiImage: UIImage? = nil
   @State private var showActivityView: Bool = false
+  @State var count = 0
+  @State var timer :Timer?
 
   var body: some View {
       //下verをletに変えたら準警告が出なくなった
-      let url = fileSave(fileName: "somePDF.pdf")
+      let url = fileSave(fileName: "wavePDF.pdf")
       
       VStack {
       Text("Ethan's memo")
@@ -91,6 +93,9 @@ struct ContentView: View {
               .padding(.all)
               .offset(x: 0, y: 300)
           
+      
+      
+          
           
           /*if self.text.isEmpty
           { Text("write here").opacity(0.25)
@@ -98,15 +103,85 @@ struct ContentView: View {
               .font(.system(size: 30))
           }*/
 //Button(action以下をランダムのタイミングで実行してくれるシステム作る 装飾は除く
+        
           Button(action: {
-                         //ボタンを押したら乱数生成⇨変数に代入
+          timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+            //確率で以下のdelete行為を実行するif文を書く
+              //1-9範囲指定して、その中に5が含まれればdeleteを実行する
+              let numbers = "123456789"
+              let randomnumber1 = Int.random(in: 1..<10)
+              let randomnumber2 = Int.random(in: 1..<10)
+             
+
+              var sub = ""
+
+              if randomnumber1 > randomnumber2 {
+                  possibility = ""
+              } else {
+                  let startIdx = s.index(s.startIndex, offsetBy: randomnumber1, limitedBy: s.endIndex) ?? s.endIndex
+                  let endIdx = s.index(s.startIndex, offsetBy: randomnumber2 + 1, limitedBy: s.endIndex) ?? s.endIndex
+                  possibility = String(s[startIdx..<endIdx])
+              }
+              
+              if possibility.contain("5"){
+                
+                
+              if
+              
+              let s = text
+              let start = 0
+              let end = 10
+
+              var sub = ""
+
+              if start > end {
+                  sub = ""
+              } else {
+                  let startIdx = s.index(s.startIndex, offsetBy: start, limitedBy: s.endIndex) ?? s.endIndex
+                  let endIdx = s.index(s.startIndex, offsetBy: end + 1, limitedBy: s.endIndex) ?? s.endIndex
+                  sub = String(s[startIdx..<endIdx])
+              }
+              
+              
+//一行あたりの文字数を制限できないから、指定できん
+              if (sub.contains("/n") == true   ){
+                  let num = Int(text.count)
+                  
+                  self.text = String(text.dropFirst(num-1))
+             
+              
+              /*}else if ( text.count >= 10){
+                  
+                  let num = 10
+                  
+                  self.text = String(text.dropFirst(num))*/
+    
+              
+              }else{
+                  
+                  let num = text.count
+                  
+                  
+                  self.text = String(text.dropFirst(text.count))
+              }
+              
+          
+          })
+              
+          }
+             
+              
+                    
+          
+                    
+                    //ボタンを押したら乱数生成⇨変数に代入
                          //乱数を代入できた
-              let randomInt = Int.random(in: 1..<4)
-              self.text = String(text.dropLast(randomInt))
+              //let randomInt = Int.random(in: 1..<10)
               
               // droplastをline数に変換できないかな
               
-                      }){
+                     /* }){
+                        //以下8行くらいは装飾
                           Image(systemName: "clear")
                           Text("Delete (random number) letters")
                                   .frame(width: 300, height: 60)
@@ -114,7 +189,7 @@ struct ContentView: View {
                       }
                       .background(Color.white)
                       .offset(x: 0, y: 300)
-                      .foregroundColor(Color.black)
+                      .foregroundColor(Color.black)*/
           
                       
           
@@ -231,5 +306,4 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
 
