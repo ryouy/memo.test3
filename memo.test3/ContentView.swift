@@ -5,8 +5,15 @@
 //  Created by Ryo  on 2022/05/17.
 //
 
-import SwiftUI
+//
+//  ContentView.swift
+//  memo.test3
+//
+//  Created by Ryo  on 2022/05/17.
+//
 
+import SwiftUI
+import Foundation
 import Combine
 //textfieldに直接入力できるようにするためのclass設定か、もしくはキーボードの動的高さ設定
 //いずれ必要になりそうだから残しておこう
@@ -65,6 +72,8 @@ struct ContentView: View {
   @State private var showActivityView: Bool = false
   @State var count = 0
   @State var timer :Timer?
+    
+    private let maxTextLength = 10
 
   var body: some View {
       //下verをletに変えたら準警告が出なくなった
@@ -74,6 +83,7 @@ struct ContentView: View {
       Text("Ethan's memo")
       
       ZStack {
+          
           /*LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
           
                             .ignoresSafeArea()*/
@@ -82,97 +92,63 @@ struct ContentView: View {
               .resizable()
               //.aspectRatio(contentMode: .fit)
               .offset(x: 0, y: 0)
+              .onTapGesture {
+               UIApplication.shared.closeKeyboard()
+              }
 
-              
-              
           TextEditor(text: self.$text)
               .frame(minHeight: 100)
               .font(.system(size: 30))
               .multilineTextAlignment(.center)
               .background(Color.clear)
               .padding(.all)
-              .offset(x: 0, y: 300)
+              .offset(x: 0, y: 100)
+              .onChange(of: text) { value in
+                  
+//                  入力変更されたとき、最後の行の文字数をチェック
+//                  abcd\nefg -> ["abcd","efg"]
+                  var textArray=text.components(separatedBy:.newlines)
+//                 efgだけを抽出
+                  let newText=textArray.last!
+//                  efgがmaxTextLengthより大きいと強制改行
+                  if newText.count > maxTextLength{
+                      textArray.append(contentsOf:[String(newText.dropFirst(maxTextLength-1))])
+                      textArray[textArray.count-2] = String(newText.prefix(maxTextLength))
+//                      \nで区切りにして文字列に戻す
+                      text=textArray.joined(separator: "\n")
+                  }
+              }
           
-      
-      
-          
-          
-          /*if self.text.isEmpty
-          { Text("write here").opacity(0.25)
-              .offset(x: 0, y: -20)
+          if self.text.isEmpty{ Text("write here").opacity(0.25)
+              .offset(x: 0, y: 180)
               .font(.system(size: 30))
-          }*/
+          }
 //Button(action以下をランダムのタイミングで実行してくれるシステム作る 装飾は除く
         
-          Button(action: {
-          timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+          
+          Button("start wave", action: {
+          timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
             //確率で以下のdelete行為を実行するif文を書く
               //1-9範囲指定して、その中に5が含まれればdeleteを実行する
-              let numbers = "123456789"
-              let randomnumber1 = Int.random(in: 1..<10)
-              let randomnumber2 = Int.random(in: 1..<10)
-             
-
-              var sub = ""
-
-              if randomnumber1 > randomnumber2 {
-                  possibility = ""
-              } else {
-                  let startIdx = s.index(s.startIndex, offsetBy: randomnumber1, limitedBy: s.endIndex) ?? s.endIndex
-                  let endIdx = s.index(s.startIndex, offsetBy: randomnumber2 + 1, limitedBy: s.endIndex) ?? s.endIndex
-                  possibility = String(s[startIdx..<endIdx])
+              let randomnumber = Int.random(in: 1..<3)
+//５より小さい時に一行目を消す
+              if randomnumber == 1 {
+                  let textArray=text.components(separatedBy:.newlines)
+                  if textArray.count>1{
+//                      一行目以降を残す
+//                   何行消すかをランダムにした
+                      let randomwavenumber = Int.random(in:1..<3)
+                      text=textArray[randomwavenumber..<textArray.count].joined(separator: "\n")
+                      print(text)
+                  }else{
+                      text=""
+                  }
               }
-              
-              if possibility.contain("5"){
-                
-                
-              if
-              
-              let s = text
-              let start = 0
-              let end = 10
-
-              var sub = ""
-
-              if start > end {
-                  sub = ""
-              } else {
-                  let startIdx = s.index(s.startIndex, offsetBy: start, limitedBy: s.endIndex) ?? s.endIndex
-                  let endIdx = s.index(s.startIndex, offsetBy: end + 1, limitedBy: s.endIndex) ?? s.endIndex
-                  sub = String(s[startIdx..<endIdx])
-              }
-              
-              
 //一行あたりの文字数を制限できないから、指定できん
-              if (sub.contains("/n") == true   ){
-                  let num = Int(text.count)
-                  
-                  self.text = String(text.dropFirst(num-1))
-             
-              
-              /*}else if ( text.count >= 10){
-                  
-                  let num = 10
-                  
-                  self.text = String(text.dropFirst(num))*/
-    
-              
-              }else{
-                  
-                  let num = text.count
-                  
-                  
-                  self.text = String(text.dropFirst(text.count))
-              }
-              
-          
-          })
-              
+          }})
+         .offset(x: 0, y: 200)
+          ;
           }
-             
-              
-                    
-          
                     
                     //ボタンを押したら乱数生成⇨変数に代入
                          //乱数を代入できた
@@ -190,13 +166,7 @@ struct ContentView: View {
                       .background(Color.white)
                       .offset(x: 0, y: 300)
                       .foregroundColor(Color.black)*/
-          
-                      
-          
-          
-          
         }
-      }
       //下のコードを忘れ、1時間スクショがずっと真っ白で死んでた
       .background(RectangleGetter(rect: $rect))
       
@@ -232,6 +202,17 @@ struct ContentView: View {
  }
 
 }
+
+
+
+extension UIApplication {
+    func closeKeyboard() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+
+
 
 // pdf保存のための長いおまじない
 struct RectangleGetter: View {
@@ -306,4 +287,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
