@@ -136,9 +136,7 @@ struct ContentView: View {
                   let textArray=text.components(separatedBy:.newlines)
                   if textArray.count>1{
 //                      一行目以降を残す
-//                   何行消すかをランダムにした
-                      let randomwavenumber = Int.random(in:1..<3)
-                      text=textArray[randomwavenumber..<textArray.count].joined(separator: "\n")
+                      text=textArray[1..<textArray.count].joined(separator: "\n")
                       print(text)
                   }else{
                       text=""
