@@ -67,7 +67,7 @@ struct ContentView: View {
   @State var count = 0
   @State var timer :Timer?
   //@State var textArray = [""]
-  @State var textArray = ["1","2","4","6"]
+  @State var textArray = ["1","2","3","4"]
     
     private let maxTextLength = 10
 
@@ -85,7 +85,7 @@ struct ContentView: View {
           
           
           
-          
+         //お試し
           Text(text)
               .background(Color.white)
       
@@ -126,9 +126,11 @@ struct ContentView: View {
 //                 efgだけを抽出
                   let newText=textArray.last!
 //                  efgがmaxTextLengthより大きいと強制改行
-                  //改行文字がきたらor10文字超えたら、textinputarrayに送って、一行目を削除する
+                  //改行文字がきたらor10文字超えたら、textarrayに送って、一行目を削除する
                   if text.contains("\n"){
                       textArray.append(text)
+                      textArray.removeFirst()
+                      self.text = ""
                       
                   }
                   
@@ -148,7 +150,7 @@ struct ContentView: View {
               }
           //TextArray.append(text)   text=""
           //もしくは TextArray.dropfirst(num=10)で消去
-          //TextInputArray.removeFirst()
+          //TextArray.removeFirst()
           
           /*if self.text.isEmpty{ Text("write here").opacity(0.25)
               .offset(x: 0, y: 180)
@@ -161,13 +163,15 @@ struct ContentView: View {
           timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
               
               
-          textArray.removeFirst()
+         
             //確率で以下のdelete行為を実行するif文を書く
               //1-9範囲指定して、その中に5が含まれればdeleteを実行する
               let randomnumber = Int.random(in: 1..<3)
 //５より小さい時に一行目を消す
               if randomnumber == 1 {
-                  let textArray=text.components(separatedBy:.newlines)
+                  
+                  textArray.removeFirst()
+/*                  let textArray=text.components(separatedBy:.newlines)
                   if textArray.count>1{
 //                      一行目以降を残す
                       text=textArray[1..<textArray.count].joined(separator: "\n")
@@ -178,6 +182,7 @@ struct ContentView: View {
                   
 //                  textArray.append(contentsOf:
 //                                    )
+ */
               }
 //一行あたりの文字数を制限できないから、指定できん
           }})
