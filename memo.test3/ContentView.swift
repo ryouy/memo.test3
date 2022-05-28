@@ -122,7 +122,7 @@ struct ContentView: View {
                   
 //                  入力変更されたとき、最後の行の文字数をチェック
 //                  abcd\nefg -> ["abcd","efg"]
-                  var textArray=text.components(separatedBy:.newlines)
+                //  var textArray=text.components(separatedBy:.newlines)
 //                 efgだけを抽出
                   let newText=textArray.last!
 //                  efgがmaxTextLengthより大きいと強制改行
@@ -134,12 +134,15 @@ struct ContentView: View {
                       
                   }
                   
-                  if newText.count > maxTextLength{
+                  if text.count > maxTextLength{
                       //text.removeFirst(10)
-                      textArray.append(contentsOf:[String(newText.dropFirst(maxTextLength-1))])
+                      textArray.append(text)
+                      textArray.removeFirst()
+                      self.text = ""
+/*                      textArray.append(contentsOf:[String(newText.dropFirst(maxTextLength-1))])
                       textArray[textArray.count-2] = String(newText.prefix(maxTextLength))
 //                      \nで区切りにして文字列に戻す
-                      text=textArray.joined(separator: "\n")
+                      text=textArray.joined(separator: "\n")*/
                     
                   }
               
