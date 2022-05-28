@@ -5,19 +5,13 @@
 //  Created by Ryo  on 2022/05/17.
 //
 
-//
-//  ContentView.swift
-//  memo.test3
-//
-//  Created by Ryo  on 2022/05/17.
-//
 
 import SwiftUI
 import Foundation
 import Combine
 //textfieldに直接入力できるようにするためのclass設定か、もしくはキーボードの動的高さ設定
 //いずれ必要になりそうだから残しておこう
-class KeyboardObserver: ObservableObject {
+/*class KeyboardObserver: ObservableObject {
 
   @Published var keyboardHeight: CGFloat = 0.0
 
@@ -53,7 +47,7 @@ class KeyboardObserver: ObservableObject {
         }
       }
 
-    }
+    }*/
 
 //乱数生成できたが、アプリ起動直後しか適用されない⇨できた！！！！
 //let randomInt = Int.random(in: 1..<4)
@@ -65,13 +59,15 @@ class KeyboardObserver: ObservableObject {
 //見た目を作る
 struct ContentView: View {
 
-  @ObservedObject var keyboard = KeyboardObserver()
+//  @ObservedObject var keyboard = KeyboardObserver()
   @State var text: String = ""
   @State private var rect: CGRect = .zero
   @State var uiImage: UIImage? = nil
   @State private var showActivityView: Bool = false
   @State var count = 0
   @State var timer :Timer?
+  //@State var textArray = [""]
+  @State var textArray = ["1","2","4","6"]
     
     private let maxTextLength = 10
 
@@ -80,27 +76,46 @@ struct ContentView: View {
       let url = fileSave(fileName: "wavePDF.pdf")
       
       VStack {
+    
+      Spacer()
       Text("Ethan's memo")
+          
+           
+          
+          
+          
+          
+          
+          Text(text)
+              .background(Color.white)
       
       ZStack {
           
           /*LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
           
                             .ignoresSafeArea()*/
+        
+          Form {
+              ForEach(textArray, id:\.self) { array in
+                 Text(array)
+             }
+         }
+         
           
-          Image("wavess")
+         /* Image("wavess")
               .resizable()
               //.aspectRatio(contentMode: .fit)
               .offset(x: 0, y: 0)
               .onTapGesture {
                UIApplication.shared.closeKeyboard()
-              }
+              }*/
 
-          TextEditor(text: self.$text)
-              .frame(minHeight: 100)
+          TextField("write here", text: self.$text)
+             // .frame(minHeight: )
+              .frame(maxHeight: 45)
               .font(.system(size: 30))
               .multilineTextAlignment(.center)
-              .background(Color.clear)
+              .background(Color.white)
               .padding(.all)
               .offset(x: 0, y: 100)
               .onChange(of: text) { value in
@@ -111,23 +126,42 @@ struct ContentView: View {
 //                 efgだけを抽出
                   let newText=textArray.last!
 //                  efgがmaxTextLengthより大きいと強制改行
+                  //改行文字がきたらor10文字超えたら、textinputarrayに送って、一行目を削除する
+                  if text.contains("\n"){
+                      textArray.append(text)
+                      
+                  }
+                  
                   if newText.count > maxTextLength{
+                      //text.removeFirst(10)
                       textArray.append(contentsOf:[String(newText.dropFirst(maxTextLength-1))])
                       textArray[textArray.count-2] = String(newText.prefix(maxTextLength))
 //                      \nで区切りにして文字列に戻す
                       text=textArray.joined(separator: "\n")
+                    
                   }
-              }
+              
           
-          if self.text.isEmpty{ Text("write here").opacity(0.25)
+/*          if text.contains("\n"){
+              text.dropFirst(10)
+          }*/
+              }
+          //TextArray.append(text)   text=""
+          //もしくは TextArray.dropfirst(num=10)で消去
+          //TextInputArray.removeFirst()
+          
+          /*if self.text.isEmpty{ Text("write here").opacity(0.25)
               .offset(x: 0, y: 180)
               .font(.system(size: 30))
-          }
+          }*/
 //Button(action以下をランダムのタイミングで実行してくれるシステム作る 装飾は除く
         
           
           Button("start wave", action: {
           timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { _ in
+              
+              
+          textArray.removeFirst()
             //確率で以下のdelete行為を実行するif文を書く
               //1-9範囲指定して、その中に5が含まれればdeleteを実行する
               let randomnumber = Int.random(in: 1..<3)
@@ -141,6 +175,9 @@ struct ContentView: View {
                   }else{
                       text=""
                   }
+                  
+//                  textArray.append(contentsOf:
+//                                    )
               }
 //一行あたりの文字数を制限できないから、指定できん
           }})
@@ -168,7 +205,7 @@ struct ContentView: View {
       //下のコードを忘れ、1時間スクショがずっと真っ白で死んでた
       .background(RectangleGetter(rect: $rect))
       
-    .onAppear(perform: {
+  /*  .onAppear(perform: {
         self.keyboard.addObserver()
         UITextView.appearance().backgroundColor = .clear
     }).onDisappear(perform: {
@@ -177,7 +214,7 @@ struct ContentView: View {
     }).padding(.bottom,
                self.keyboard.keyboardHeight)
       .animation(.easeOut)
-      
+      */
       Spacer()
       Button(action: {
                       self.showActivityView.toggle()
@@ -200,6 +237,12 @@ struct ContentView: View {
  }
 
 }
+
+
+
+
+
+//textinputarrayの配列をうまくずらすコードが欲しいね
 
 
 
