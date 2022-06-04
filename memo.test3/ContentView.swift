@@ -8,6 +8,8 @@
 import SwiftUI
 import Foundation
 import Combine
+import UIKit
+import WaveAnimationView
 
 
 
@@ -18,42 +20,56 @@ struct ContentView: View {
     @State var uiImage: UIImage? = nil
     @State private var showActivityView: Bool = false
     @State var count = 0
+    @State var timerLoop :Timer?
     @State var timer :Timer?
+
     @State var textArray=["1","2","3","4"]
+    
     @State var timerFlg=true
     @State private var flag = false
+    @State private var isDone = false
+    @State private var isRotatedSq2 = true
+
     private let maxTextLength = 10
+    
+    
     
     var body: some View {
        
         let url = fileSave(fileName: "wavePDF.pdf")
-        
-        VStack {
-            
-            
-            Image("blue")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 420, height: 150)
-               
-//                .offset(y: flag ? 100 : -100)
-//                .animation(.easeInOut(duration: 3.0))
-                 
-        
-            
-            ZStack {
+        VStack{
+            ZStack (alignment: .top){
+                Image("blue")
+                    .resizable()
+                    .scaledToFit()
+                    .zIndex(1)
                 
+  //ios version関係でlist無理
+/*                List {
+                    Section("国名") {
+                        ForEach(textArray, id: \.self) { array in
+                            Text(array)
+                        }
+                        .listRowSeparator(.hidden)
+                    }
+                }
+                */
+                    
                 Form {
                     ForEach(textArray, id:\.self) { array in
                         Text(array)
+                            .transition(.opacity)
+                            .animation(.easeInOut(duration: 5.0))
                     }
                     
-                }
+                }.offset(x: 0,y: 100)
+
                 .onTapGesture {
                     UIApplication.shared.closeKeyboard()
-                }
-               
-                   .animation(.easeIn)
+                }.animation(.easeIn)
+                
+//波のように消えて欲しい　消えん？
+                .opacity(isRotatedSq2 ? 1.0 : 0.2)                                      .animation(Animation.linear(duration: 2.0), value: isRotatedSq2)
                 
                 
                 
@@ -62,81 +78,57 @@ struct ContentView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 420, height: 150)
-                    .offset(y: flag ? 0 : 0)
-                    .offset(x: 0, y: -270)
+                    .offset(x: 0,y: flag ? 120: 0)
                     .animation(.easeInOut(duration: 3.0))
-                    .animation(Animation.default
-                        .repeatCount(3)
-                    )
-                
-                
-                
-                TextEditor( text: self.$text)
-                    .frame(maxHeight: 40)
-                    .font(.system(size: 30))
-                    .font(Font.body.bold())
-                    .multilineTextAlignment(.center)
-                    .background(Color.white)
-                    .padding(.all)
-                    .offset(x: 0, y: 100)
-                    .onChange(of: text) { value in
-                        
-                        if value.contains("\n"){
-                            var newText=value
-                            
-                            //アニメーション後にtimerでdelay
-                            newText.removeLast()
-                            textArray.append(newText)
-                            self.text = ""
-                            
-                            
-                        }
-                        
-                        if value.count > maxTextLength{
-                            textArray.append(value)
-                            self.text = ""
-                        }
-                        
-                        if textArray.count>5{
-
-                            //アニメーション後にtimerでdelay
-                            textArray.removeFirst()
-                        }
-                        
-                      if (value.contains("\n") || value.count > maxTextLength)&&timerFlg==true{
-//
-                          timerFlg=false
-                        
-                    
-                    Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { timer in
-                                
-                                let randomnumber = Int.random(in: 1..<3)
-                                if randomnumber == 1 {
-                                    if textArray.count>0{
-                                        textArray.removeFirst()
-                                    }
-                                }
-                            }
-                          
-                          self.flag.toggle()
-                          
- 
-                       }
-                    }
-                
-                
-                
-                
             }
             
-            
+            TextEditor( text: self.$text)
+                .frame(maxHeight: 40)
+                .font(.system(size: 30))
+                .font(Font.body.bold())
+                .multilineTextAlignment(.center)
+                .background(Color.white)
+                .onChange(of: text) { value in
+                    if value.contains("\n"){
+                        var newText=value
+                        newText.removeLast()
+                        textArray.append(newText)
+                        self.text = ""
+                        
+                    } else if value.count > maxTextLength{
+                        var newlongText=value
+         //               newlongText.removeLast()
+                        var someTexts=newlongText.splitInto(10)
+                        textArray.append(contentsOf: someTexts)
+                    //    self.text = ""
+                        
+                    }
+                    
+                    if ( textArray.count>5 ){
+                        textArray.removeFirst()
+                  }
+            }
+        }.onAppear{
+            self.timerLoop = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+                let randomnumber = Int.random(in: 1..<3)
+                let randomwavescale = Int.random(in: 1..<3)
+                if randomnumber == 1 {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.3, blendDuration: 0)) {
+                        self.flag.toggle()
+                    }
+                    self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { _ in
+                        self.flag.toggle()
+                        if textArray.count>0{
+                            textArray.removeFirst(randomwavescale)
+                            print(textArray)
+
+                        }
+                    }
+                }
+            }
         }
         .background(RectangleGetter(rect: $rect))
-        
-        
-        //上のコードはスクショの範囲指定用
-        
-        
+            
         
         Spacer()
         Button(action: {
@@ -157,17 +149,8 @@ struct ContentView: View {
                 applicationActivities: nil
             )
         }
-        
-        
     }
-    
-    
-    
 }
-
-
-
-
 
 extension UIApplication {
     func closeKeyboard() {
@@ -241,6 +224,18 @@ func fileSave(fileName: String) -> URL {
     let filePath = dir.appendingPathComponent(fileName, isDirectory: false)
     return filePath
 }
+
+extension String {
+    func splitInto(_ length: Int) -> [String] {
+        var str = self
+        for i in 0 ..< (str.count - 1) / max(length, 1) {
+            str.insert(",", at: str.index(str.startIndex, offsetBy: (i + 1) * max(length, 1) + i))
+        }
+        return str.components(separatedBy: ",")
+    }
+}
+
+
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
