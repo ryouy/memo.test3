@@ -29,8 +29,8 @@ struct ContentView: View {
     @State private var flag = false
     @State private var isDone = false
     @State private var isRotatedSq2 = true
-     var randomnumber = Int.random(in: 1..<2)
-     var randomwavescale = Int.random(in: 1..<3)
+    // animationで使用するために最初で宣言したいが、更新されずにずっと一定の値になる
+    @State var randomwavescale = Int.random(in: 1..<4)
 
     private let maxTextLength = 10
     
@@ -86,7 +86,7 @@ struct ContentView: View {
 //                   if randomwavescale == 2{
 //                let wavescale = 110 }
 //                   if randomwavescale == 3{
-//                let wavescale = 155 }
+//                let wavescale = 155 }   wavescaleを　flag ?○: 0)に代入
                 
                 
                     .offset(x: 0,y: flag ?60: 0)
@@ -116,8 +116,8 @@ struct ContentView: View {
                         
                     }*/
                     
-                    if ( textArray.count>5 ){
-                        textArray.removeFirst(textArray.count-5)
+                    if ( textArray.count>10 ){
+                        textArray.removeFirst(textArray.count-10)
                     }
                 }
         }.onAppear{
