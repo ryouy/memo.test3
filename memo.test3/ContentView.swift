@@ -29,6 +29,8 @@ struct ContentView: View {
     @State private var flag = false
     @State private var isDone = false
     @State private var isRotatedSq2 = true
+     var randomnumber = Int.random(in: 1..<2)
+     var randomwavescale = Int.random(in: 1..<3)
 
     private let maxTextLength = 10
     
@@ -69,8 +71,8 @@ struct ContentView: View {
                 }.animation(.easeIn)
                 
 //波のように消えて欲しい　消えん？
-                .opacity(isRotatedSq2 ? 1.0 : 0.2)                                      .animation(Animation.linear(duration: 2.0), value: isRotatedSq2)
-                
+/*                .opacity(isRotatedSq2 ? 1.0 : 0.2)                                      .animation(Animation.linear(duration: 2.0), value: isRotatedSq2)
+      */
                 
                 
                 
@@ -78,8 +80,17 @@ struct ContentView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 420, height: 150)
-                    .offset(x: 0,y: flag ? 120: 0)
-                    .animation(.easeInOut(duration: 3.0))
+
+//                   if randomwavescale == 1{
+//                let wavescale = 60 }
+//                   if randomwavescale == 2{
+//                let wavescale = 110 }
+//                   if randomwavescale == 3{
+//                let wavescale = 155 }
+                
+                
+                    .offset(x: 0,y: flag ?60: 0)
+                    .animation(.easeInOut(duration: 2.0))
             }
             
             TextEditor( text: self.$text)
@@ -90,28 +101,28 @@ struct ContentView: View {
                 .background(Color.white)
                 .onChange(of: text) { value in
                     if value.contains("\n"){
-                        var newText=value
+                       /* var newText=value
                         newText.removeLast()
-                        textArray.append(newText)
+                        textArray.append(newText)*/
+                        let newlongText=value
+                        //               newlongText.removeLast()
+                        let someTexts=newlongText.splitInto(10)
+                        textArray.append(contentsOf: someTexts)
                         self.text = ""
                         
-                    } else if value.count > maxTextLength{
-                        var newlongText=value
-         //               newlongText.removeLast()
-                        var someTexts=newlongText.splitInto(10)
-                        textArray.append(contentsOf: someTexts)
-                    //    self.text = ""
+                    } /*else if value.contains{
                         
-                    }
+                        //   self.text = ""
+                        
+                    }*/
                     
                     if ( textArray.count>5 ){
-                        textArray.removeFirst()
-                  }
-            }
+                        textArray.removeFirst(textArray.count-5)
+                    }
+                }
         }.onAppear{
             self.timerLoop = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
-                let randomnumber = Int.random(in: 1..<3)
-                let randomwavescale = Int.random(in: 1..<3)
+                let randomnumber = Int.random(in: 1..<2)
                 if randomnumber == 1 {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.3, blendDuration: 0)) {
                         self.flag.toggle()
@@ -119,7 +130,7 @@ struct ContentView: View {
                     self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { _ in
                         self.flag.toggle()
                         if textArray.count>0{
-                            textArray.removeFirst(randomwavescale)
+                           textArray.removeFirst(randomwavescale)
                             print(textArray)
 
                         }
