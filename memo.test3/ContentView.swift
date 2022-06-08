@@ -22,22 +22,30 @@ struct ContentView: View {
     @State var count = 0
     @State var timerLoop :Timer?
     @State var timer :Timer?
-
+    
     @State var textArray=["1","2","3","4"]
     
     @State var timerFlg=true
     @State private var flag = false
     @State private var isDone = false
     @State private var isRotatedSq2 = true
-    // animationで使用するために最初で宣言したいが、更新されずにずっと一定の値になる
-    @State var randomwavescale = Int.random(in: 1..<4)
-
+    
+    @State private var randomwavescale = 0
+    // @State private var wavescale = 0
     private let maxTextLength = 10
     
     
     
+    
     var body: some View {
-       
+        
+        if randomwavescale == 1{
+     let wavescale = 60 }
+        if randomwavescale == 2{
+     let wavescale = 110 }
+        if randomwavescale == 3{
+     let wavescale = 155 }
+        
         let url = fileSave(fileName: "wavePDF.pdf")
         VStack{
             ZStack (alignment: .top){
@@ -46,17 +54,17 @@ struct ContentView: View {
                     .scaledToFit()
                     .zIndex(1)
                 
-  //ios version関係でlist無理
-/*                List {
-                    Section("国名") {
-                        ForEach(textArray, id: \.self) { array in
-                            Text(array)
-                        }
-                        .listRowSeparator(.hidden)
-                    }
-                }
-                */
-                    
+                //can't use list due to ios version
+                /*                List {
+                 Section("some") {
+                 ForEach(textArray, id: \.self) { array in
+                 Text(array)
+                 }
+                 .listRowSeparator(.hidden)
+                 }
+                 }
+                 */
+                
                 Form {
                     ForEach(textArray, id:\.self) { array in
                         Text(array)
@@ -65,31 +73,25 @@ struct ContentView: View {
                     }
                     
                 }.offset(x: 0,y: 100)
-
-                .onTapGesture {
-                    UIApplication.shared.closeKeyboard()
-                }.animation(.easeIn)
                 
-//波のように消えて欲しい　消えん？
-/*                .opacity(isRotatedSq2 ? 1.0 : 0.2)                                      .animation(Animation.linear(duration: 2.0), value: isRotatedSq2)
-      */
-                
-                
+                    .onTapGesture {
+                        UIApplication.shared.closeKeyboard()
+                    }.animation(.easeIn)
+            
                 
                 Image("blue")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 420, height: 150)
-
-//                   if randomwavescale == 1{
-//                let wavescale = 60 }
-//                   if randomwavescale == 2{
-//                let wavescale = 110 }
-//                   if randomwavescale == 3{
-//                let wavescale = 155 }   wavescaleを　flag ?○: 0)に代入
                 
-                
-                    .offset(x: 0,y: flag ?60: 0)
+                                   if randomwavescale == 1{
+                                var wavescale = 60 }
+                                   if randomwavescale == 2{
+                                var wavescale = 110 }
+                                   if randomwavescale == 3{
+                                var wavescale = 155 }
+                //substitute wavescale
+                    .offset(x: 0,y: flag ?wavescale: 0)
                     .animation(.easeInOut(duration: 2.0))
             }
             
@@ -101,23 +103,15 @@ struct ContentView: View {
                 .background(Color.white)
                 .onChange(of: text) { value in
                     if value.contains("\n"){
-                       /* var newText=value
-                        newText.removeLast()
-                        textArray.append(newText)*/
                         let newlongText=value
-                        //               newlongText.removeLast()
                         let someTexts=newlongText.splitInto(10)
                         textArray.append(contentsOf: someTexts)
                         self.text = ""
                         
-                    } /*else if value.contains{
-                        
-                        //   self.text = ""
-                        
-                    }*/
+                    }
                     
-                    if ( textArray.count>10 ){
-                        textArray.removeFirst(textArray.count-10)
+                    if ( textArray.count>5 ){
+                        textArray.removeFirst(textArray.count-5)
                     }
                 }
         }.onAppear{
@@ -125,21 +119,24 @@ struct ContentView: View {
                 let randomnumber = Int.random(in: 1..<2)
                 if randomnumber == 1 {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.3, blendDuration: 0)) {
+                        //insert below line and start
+                        self.randomwavescale = choosewavescale();
                         self.flag.toggle()
+                        
                     }
                     self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { _ in
                         self.flag.toggle()
-                        if textArray.count>0{
-                           textArray.removeFirst(randomwavescale)
+                        if textArray.count>randomwavescale{
+                            textArray.removeFirst(randomwavescale-1)
                             print(textArray)
-
+                            
                         }
                     }
                 }
             }
         }
         .background(RectangleGetter(rect: $rect))
-            
+        
         
         Spacer()
         Button(action: {
@@ -168,7 +165,7 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
-// pdf保存のための長いおまじない
+
 struct RectangleGetter: View {
     @Binding var rect: CGRect
     
@@ -196,6 +193,13 @@ extension UIView {
     }
 }
 
+//function for randomwavescale
+func choosewavescale() -> Int {
+    let random = Int.random(in: 1..<3)
+    let randomwavescale = random
+    return randomwavescale
+}
+    
 func createPdfFromView(hosting: UIImageView, saveToDocumentsWithFileName fileName: String) {
     let pdfData = NSMutableData()
     UIGraphicsBeginPDFContextToData(pdfData, hosting.bounds, nil)
@@ -226,7 +230,7 @@ struct ActivityView: UIViewControllerRepresentable {
         _ uiViewController: UIActivityViewController,
         context: UIViewControllerRepresentableContext<ActivityView>
     ) {
-        // Nothing to do
+        
     }
 }
 
