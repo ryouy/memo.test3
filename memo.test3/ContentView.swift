@@ -32,19 +32,19 @@ struct ContentView: View {
     
     @State private var randomwavescale = 0
     // @State private var wavescale = 0
+    @State private var wavescale = 0
     private let maxTextLength = 10
+    
+    
+    
+    
     
     
     
     
     var body: some View {
         
-        if randomwavescale == 1{
-     let wavescale = 60 }
-        if randomwavescale == 2{
-     let wavescale = 110 }
-        if randomwavescale == 3{
-     let wavescale = 155 }
+        
         
         let url = fileSave(fileName: "wavePDF.pdf")
         VStack{
@@ -84,12 +84,7 @@ struct ContentView: View {
                     .scaledToFit()
                     .frame(width: 420, height: 150)
                 
-                                   if randomwavescale == 1{
-                                var wavescale = 60 }
-                                   if randomwavescale == 2{
-                                var wavescale = 110 }
-                                   if randomwavescale == 3{
-                                var wavescale = 155 }
+                                   
                 //substitute wavescale
                     .offset(x: 0,y: flag ?wavescale: 0)
                     .animation(.easeInOut(duration: 2.0))
@@ -116,12 +111,21 @@ struct ContentView: View {
                 }
         }.onAppear{
             self.timerLoop = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+                choosewavescale()
+                if randomwavescale == 1{
+                    wavescale = 60 }
+                if randomwavescale == 2{
+                    wavescale = 110 }
+                if randomwavescale == 3{
+                    wavescale = 155 }
                 let randomnumber = Int.random(in: 1..<2)
                 if randomnumber == 1 {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.3, blendDuration: 0)) {
                         //insert below line and start
                         self.randomwavescale = choosewavescale();
                         self.flag.toggle()
+                        
+                        
                         
                     }
                     self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { _ in
