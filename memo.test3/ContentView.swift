@@ -31,14 +31,8 @@ struct ContentView: View {
     @State private var isRotatedSq2 = true
     
     @State private var randomwavescale = 0
-    // @State private var wavescale = 0
     @State private var wavescale = 0
     private let maxTextLength = 10
-    
-    
-    
-    
-    
     
     
     
@@ -54,16 +48,6 @@ struct ContentView: View {
                     .scaledToFit()
                     .zIndex(1)
                 
-                //can't use list due to ios version
-                /*                List {
-                 Section("some") {
-                 ForEach(textArray, id: \.self) { array in
-                 Text(array)
-                 }
-                 .listRowSeparator(.hidden)
-                 }
-                 }
-                 */
                 
                 Form {
                     ForEach(textArray, id:\.self) { array in
@@ -83,10 +67,7 @@ struct ContentView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 420, height: 150)
-                
-                                   
-                //substitute wavescale
-                    .offset(x: 0,y: flag ?wavescale: 0)
+                    .offset(x: 0,y: flag ?CGFloat(wavescale): 0)
                     .animation(.easeInOut(duration: 2.0))
             }
             
@@ -105,36 +86,45 @@ struct ContentView: View {
                         
                     }
                     
-                    if ( textArray.count>5 ){
+                    if textArray.count > 5 {
                         textArray.removeFirst(textArray.count-5)
                     }
                 }
         }.onAppear{
             self.timerLoop = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
-                choosewavescale()
+                
+                
+                 randomwavescale = choosewavescale()
+                //textArray.count=0でもアニメ動くように　120if文でも制御
+                if textArray.count < randomwavescale && textArray.count > 0{
+                    randomwavescale = textArray.count}
+                
                 if randomwavescale == 1{
                     wavescale = 60 }
                 if randomwavescale == 2{
                     wavescale = 110 }
                 if randomwavescale == 3{
                     wavescale = 155 }
-                let randomnumber = Int.random(in: 1..<2)
+                
+                
+                let randomnumber = Int.random(in: 1..<4)
                 if randomnumber == 1 {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.3, blendDuration: 0)) {
-                        //insert below line and start
-                        self.randomwavescale = choosewavescale();
+    
                         self.flag.toggle()
-                        
-                        
                         
                     }
-                    self.timer = Timer.scheduledTimer(withTimeInterval: 4, repeats: false) { _ in
-                        self.flag.toggle()
+                    self.timer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { _ in
+                       //これ要らなそう self.flag.toggle()
                         if textArray.count>randomwavescale{
-                            textArray.removeFirst(randomwavescale-1)
+                            textArray.removeFirst(randomwavescale)
                             print(textArray)
                             
                         }
+                        else{
+                            textArray.removeFirst(textArray.count)
+                        }
+                       
                     }
                 }
             }
@@ -199,7 +189,7 @@ extension UIView {
 
 //function for randomwavescale
 func choosewavescale() -> Int {
-    let random = Int.random(in: 1..<3)
+    let random = Int.random(in: 1..<4)
     let randomwavescale = random
     return randomwavescale
 }
