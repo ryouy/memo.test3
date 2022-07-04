@@ -9,12 +9,10 @@ import SwiftUI
 import Foundation
 import Combine
 import UIKit
-import WaveAnimationView
-
-
+import AVFoundation
 
 struct ContentView: View {
-    
+    @State var time: Int = 0
     @State var text: String = ""
     @State private var rect: CGRect = .zero
     @State var uiImage: UIImage? = nil
@@ -22,136 +20,277 @@ struct ContentView: View {
     @State var count = 0
     @State var timerLoop :Timer?
     @State var timer :Timer?
+    @State var onoff = false
+    @State var textArray=["忘れ去りたいこと...","","","","","","",""]
+    @State var opArray = Array(repeating: 1.0, count: 8)
+    @State private var flag = true
+    @State private var waveOffset = Array(repeating: Angle(degrees: 0), count: 5)
+    @State private var percent = [100,100,100,120,120]
+    @State var textlengthA = 0
+    @State var textlengthB = 0
+    @State private var thisisiPad = false
+    private var maxArrayLengthforiPhone = 4
+    private let maxArrayLengthforiPad = 6
+    private let waveSound = try!  AVAudioPlayer(data: NSDataAsset(name: "VSQSE_1184_wave_33")!.data)
+    private func playSound(){
+            waveSound.play()
+        }
+
     
-    @State var textArray=["1","2","3","4"]
-    
-    @State var timerFlg=true
-    @State private var flag = false
-    @State private var isDone = false
-    @State private var isRotatedSq2 = true
-    
-    @State private var randomwavescale = 0
-    @State private var wavescale = 0
-    private let maxTextLength = 10
     
     
+    //   private let yeah = try!  AVAudioPlayer(data: NSDataAsset(name: "yeah")!.data)
+    /*  private func playSound(){
+     yeah.play()
+     }
+     */
+    
+    init() {
+        UITableView.appearance().backgroundColor = .clear
+        UITableView.appearance().separatorColor = .clear
+        UITextView.appearance().backgroundColor = .clear
+        
+    }
     
     var body: some View {
-        
-        
-        
         let url = fileSave(fileName: "wavePDF.pdf")
-        VStack{
-            ZStack (alignment: .top){
-                Image("blue")
-                    .resizable()
-                    .scaledToFit()
-                    .zIndex(1)
+        ZStack{
+            
+            
+            
+            ZStack{
+                LinearGradient(gradient: Gradient(colors: [.blue, .white]), startPoint: .top, endPoint: .bottom)
+                    .ignoresSafeArea()
+                Color(hue: 0.1, saturation: 0.15, brightness: 1, opacity: 0.5)
                 
+            
                 
-                Form {
-                    ForEach(textArray, id:\.self) { array in
-                        Text(array)
-                            .transition(.opacity)
-                            .animation(.easeInOut(duration: 5.0))
-                    }
+                ForEach((0...4), id: \.self){nums in
                     
-                }.offset(x: 0,y: 100)
-                
+                    Wave(offset: Angle(degrees: self.waveOffset[nums].degrees), percent:Double(percent[nums])/95-(0.04)*Double((nums))
+                    )
+                    //rgbで青⇨水色⇨白としたいが、色コード的にforeachじゃきつい
+                    // .fill(Color(red: 255, green: 250, blue: 250,
+                    .fill(Color(red: 0, green: 0, blue: 1, opacity: 0.8-(0.1)*Double((nums))))
                     .onTapGesture {
                         UIApplication.shared.closeKeyboard()
-                    }.animation(.easeIn)
-            
+                        onoff = true
+                    }
+                    
+                }
                 
-                Image("blue")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 420, height: 150)
-                    .offset(x: 0,y: flag ?CGFloat(wavescale): 0)
-                    .animation(.easeInOut(duration: 2.0))
-            }
-            
-            TextEditor( text: self.$text)
-                .frame(maxHeight: 40)
-                .font(.system(size: 30))
-                .font(Font.body.bold())
-                .multilineTextAlignment(.center)
-                .background(Color.white)
-                .onChange(of: text) { value in
-                    if value.contains("\n"){
-                        let newlongText=value
-                        let someTexts=newlongText.splitInto(10)
-                        textArray.append(contentsOf: someTexts)
-                        self.text = ""
+                
+                VStack{
+                    Form {
+                        
+                        ForEach(0..<textArray.count, id:\.self) { i in
+                            Text("\(self.textArray[i])")
+                                .font(.system(size: thisisiPad ?20: 40, weight: .black, design: .rounded))
+                                .opacity(self.opArray[i])
+                                .animation(.easeInOut(duration: 1))
+                                .frame(minWidth: 0, maxWidth: .infinity, alignment: .center)
+                                .foregroundColor(.gray)
+                                .listRowBackground(Color.clear)
+                                .onTapGesture {
+                                    UIApplication.shared.closeKeyboard()
+                                }
+                            
+                        }
+                    }.offset(x:0,y:100)
+                    
+                    TextEditor( text: self.$text)
+                        .frame(maxHeight: thisisiPad ?40: 50)
+                        .font(.system(size: thisisiPad ?25: 40, weight: .black, design: .rounded))
+                        .foregroundColor(Color.gray)
+                        .multilineTextAlignment(.center)
+                        .background(Color.gray.opacity(0.2))
+                        .onChange(of: text) { value in
+                            if value.contains("\n"){
+                                var newlongText=value
+                                newlongText.removeLast()
+                                let someTexts=newlongText.splitInto(thisisiPad ?10: 25)
+                                textArray.append(contentsOf: someTexts)
+                                
+                                for _ in 0..<someTexts.count {
+                                    opArray.append(1.0)
+                                }
+                                self.text = ""
+                            }
+                            
+                            if UIDevice.current.userInterfaceIdiom == .pad {
+                                
+                                if ( textArray.count>maxArrayLengthforiPad ){
+                                    textArray.removeFirst(textArray.count-maxArrayLengthforiPad)
+                                    self.thisisiPad.toggle()
+                                }
+                            }
+                            
+                            
+                            if UIDevice.current.userInterfaceIdiom == .phone {
+                            
+                                if ( textArray.count>maxArrayLengthforiPhone ){
+                                    textArray.removeFirst(textArray.count-maxArrayLengthforiPhone)
+                                    
+                                }
+                            }
+                            
+                            
+                            
+                            
+                            
+                        }
+                    
+                    
+                }
+            }.background(RectangleGetter(rect: $rect))
+                .onAppear{
+                    //もしかしてonappearの1秒後にタイマースタートだからズレある？
+                    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+                        time += 1
+                        
+                    }
+                    playSound()
+                    Timer.scheduledTimer(withTimeInterval: 239, repeats: true) { timer in
+                        playSound()
                         
                     }
                     
-                    if textArray.count > 5 {
-                        textArray.removeFirst(textArray.count-5)
+                    onoff = true
+                    
+                    conWave(nums:0)
+                    conWave(nums:1)
+                    conWave(nums:2)
+                    
+                    self.timerLoop = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
+                        textlengthA = text.count
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                            // 2秒後に実行する処理
+                            textlengthB = text.count
+                        }
                     }
-                }
-        }.onAppear{
-            self.timerLoop = Timer.scheduledTimer(withTimeInterval: 3, repeats: true) { _ in
-                
-                
-                 randomwavescale = choosewavescale()
-                //textArray.count=0でもアニメ動くように　120if文でも制御
-                if textArray.count < randomwavescale && textArray.count > 0{
-                    randomwavescale = textArray.count}
-                
-                if randomwavescale == 1{
-                    wavescale = 60 }
-                if randomwavescale == 2{
-                    wavescale = 110 }
-                if randomwavescale == 3{
-                    wavescale = 155 }
-                
-                
-                let randomnumber = Int.random(in: 1..<4)
-                if randomnumber == 1 {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.3, blendDuration: 0)) {
-    
-                        self.flag.toggle()
+                    //2秒間に5文字以上入力してたら実行
+                    if textlengthB-textlengthA<5{
                         
-                    }
-                    self.timer = Timer.scheduledTimer(withTimeInterval: 3, repeats: false) { _ in
-                       //これ要らなそう self.flag.toggle()
-                        if textArray.count>randomwavescale{
-                            textArray.removeFirst(randomwavescale)
-                            print(textArray)
+                        
+                        self.timerLoop = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
+                            
+                            let randomnum = Int.random(in: 1..<4)
+                            
+                            if randomnum == 1 {
+                                let randomwavescale = Int.random(in: 1..<4)
+                         
+                                //           playSound()
+                  
+                                moveWave(to:Int(100-(randomwavescale)*7),nums:3)
+                                moveWave(to:Int(100-(randomwavescale)*9),nums:4)
+                                
+                   
+                                self.timer = Timer.scheduledTimer(withTimeInterval: 3.5, repeats: false) { _ in
+                                    
+                                    backWave(nums:3)
+                                    backWave(nums:4)
+                                    
+                                    self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
+                                        
+                                        for i in 0..<randomwavescale {
+                                            opArray[i]=0
+                                        }
+                                        if textArray.count>=randomwavescale{
+                                            textArray.removeFirst(randomwavescale)
+                                            for i in 0..<randomwavescale {
+                                                opArray[i]=1
+                                            }
+                                        }
+                                        
+                                        if textArray.count<randomwavescale{
+                                            textArray.removeFirst(textArray.count)
+                                            for i in 0..<randomwavescale {
+                                                opArray[i]=1
+                                            }
+                                        }
+                                    }
+                                    
+                                    
+                                    
+                                    
+                                }
+                                
+                            }
+                            
                             
                         }
-                        else{
-                            textArray.removeFirst(textArray.count)
-                        }
-                       
                     }
                 }
-            }
+                .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
+                    self.onoff = false
+                    
+                    
+                }
         }
-        .background(RectangleGetter(rect: $rect))
-        
-        
-        Spacer()
-        Button(action: {
-            self.showActivityView.toggle()
-            self.uiImage = UIApplication.shared.windows[0].rootViewController?.view!.getImage(rect: self.rect)
-            createPdfFromView(hosting: UIImageView(image: uiImage), saveToDocumentsWithFileName: "somePDF")
-        }) {
-            Text("PDF")
-                .padding()
-                .foregroundColor(Color.white)
-                .background(Color.black)
-                .cornerRadius(70)
-            
-        }.sheet(isPresented: self.$showActivityView) {
-            ActivityView(
-                activityItems: [url],
+        if onoff{
+            Spacer()
+            Button(action: {
+                self.showActivityView.toggle()
+                self.uiImage = UIApplication.shared.windows[0].rootViewController?.view!.getImage(rect: self.rect)
                 
-                applicationActivities: nil
-            )
+                createPdfFromView(hosting: UIImageView(image: uiImage), saveToDocumentsWithFileName: "wavePDF")
+            }) {
+                Text("PDF")
+                    .padding()
+                    .foregroundColor(Color.white)
+                    .background(Color.black)
+                    .cornerRadius(70)
+                
+            }.sheet(isPresented: self.$showActivityView) {
+                ActivityView(
+                    activityItems: [url],
+                    applicationActivities: nil
+                )
+            }}
+    }
+    
+    
+    
+    func moveWave(to:Int,nums:Int){
+        self.waveOffset[nums] = Angle(degrees: Double((time%6)*60)/2-180)
+        withAnimation(Animation.linear(duration: 3)){
+           // self.waveOffset[nums] = Angle(degrees: 180)
+            self.waveOffset[nums] = Angle(degrees: Double((time%6)*60)/2)
+            
+            self.percent[nums] = to
         }
     }
+    
+   
+    func backWave(nums:Int){
+        self.waveOffset[nums] = Angle(degrees: Double((time%6)*60)/2-180)
+        withAnimation(Animation.linear(duration: 3)){
+           // self.waveOffset[nums] = Angle(degrees: 180)
+            self.waveOffset[nums] = Angle(degrees: Double((time+Int(0.5))%6*60)/2)
+            
+            self.percent[nums] = 120
+            
+            
+        }
+    }
+    //timerでoffset wavesetがmovewaveとbackwaveに上書きされちゃう
+    func conWave(nums:Int){
+        withAnimation(Animation.linear(duration:6).repeatForever(autoreverses: false)) {
+            self.waveOffset[nums] = Angle(degrees: 360)
+        }
+        
+    }
+    //ランダムなdurationにするconwave 失敗
+    /* func conWave(nums:Int){
+     withAnimation(Animation.linear(duration: Double(10-Int(0.01)*(nums))).repeatForever(autoreverses: false)) {
+     self.waveOffset[nums] = Angle(degrees: 360)
+     }
+     self.timerLoop = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { _ in
+     withAnimation(Animation.linear(duration: Double(20-Int(0.01)*(nums))).repeatForever(autoreverses: false)) {
+     self.waveOffset[nums] = Angle(degrees: Double(360*Int.random(in: 1...2)))
+     }
+     }
+     }*/
 }
 
 extension UIApplication {
@@ -187,13 +326,6 @@ extension UIView {
     }
 }
 
-//function for randomwavescale
-func choosewavescale() -> Int {
-    let random = Int.random(in: 1..<4)
-    let randomwavescale = random
-    return randomwavescale
-}
-    
 func createPdfFromView(hosting: UIImageView, saveToDocumentsWithFileName fileName: String) {
     let pdfData = NSMutableData()
     UIGraphicsBeginPDFContextToData(pdfData, hosting.bounds, nil)
@@ -224,7 +356,7 @@ struct ActivityView: UIViewControllerRepresentable {
         _ uiViewController: UIActivityViewController,
         context: UIViewControllerRepresentableContext<ActivityView>
     ) {
-        
+        // Nothing to do
     }
 }
 
@@ -246,9 +378,59 @@ extension String {
 
 
 
+struct Wave: Shape {
+    
+    var offset: Angle
+    var percent: Double
+    
+    var animatableData: AnimatablePair<Double, Double>{
+        get {
+            AnimatablePair(offset.degrees, percent)
+        }
+        set {
+            offset = Angle(degrees: newValue.first)
+            percent = newValue.second
+        }
+    }
+    
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        
+        // empirically determined values for wave to be seen
+        // at 0 and 100 percent
+        let lowfudge = 0.02
+        let highfudge = 0.98
+        
+        let newpercent = lowfudge + (highfudge - lowfudge) * percent
+        //waveHeight = wave座標（下に正）*定数 もしくは
+        //movewave()の時、withaimationで3秒かけて0.02⇨0.08
+        //backwave()の時、withaimationで3秒かけて0.08⇨0.02
+        let waveHeight = 0.02 * rect.height
+        let yoffset = CGFloat(1 - newpercent) * (rect.height - 4 * waveHeight) + 2 * waveHeight
+        let startAngle = offset
+        let endAngle = offset + Angle(degrees: 360)
+        
+        p.move(to: CGPoint(x: 0, y: yoffset + waveHeight * CGFloat(sin(offset.radians))))
+        
+        for angle in stride(from: startAngle.degrees, through: endAngle.degrees, by: 4) {
+            let x = CGFloat((angle - startAngle.degrees) / 360) * rect.width
+            //sin出てきた
+            p.addLine(to: CGPoint(x: x, y: yoffset + waveHeight * CGFloat(sin(Angle(degrees: angle).radians))))
+        }
+        
+        p.addLine(to: CGPoint(x: rect.width, y: -rect.height))
+        p.addLine(to: CGPoint(x: 0, y: -rect.height))
+        p.closeSubpath()
+        
+        return p
+    }
+}
+
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
 }
+
 
